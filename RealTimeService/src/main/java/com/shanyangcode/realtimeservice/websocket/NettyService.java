@@ -1,0 +1,65 @@
+package com.shanyangcode.realtimeservice.websocket;
+
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.http.HttpObject;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.NettyRuntime;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.net.NioEndpoint;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
+
+@Configuration
+@RequiredArgsConstructor
+public class NettyService {
+
+    private final int port = 9101;
+
+    private final NioEventLoopGroup bossGroup = new NioEventLoopGroup(1);
+
+    private final  NioEventLoopGroup workerGroup = new NioEventLoopGroup(NettyRuntime.availableProcessors()*2);
+
+    private final StringRedisTemplate stringRedisTemplate;
+
+    private final KafkaTemplate<String,String> kafkaTemplate;
+    @PostConstruct
+    public void start() throws InterruptedException{
+
+        ServerBootstrap serverBootstrap = new ServerBootstrap();
+        serverBootstrap.group(bossGroup,workerGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new ChannelInitializer<SocketChannel>() {
+
+                    @Override
+                    protected void initChannel(SocketChannel socketChannel){
+
+                        ChannelPipeline pipeline = socketChannel.pipeline();
+                        pipeline.addLast(new IdleStateHandler(60,0,0));
+                        pipeline.addLast(new HttpServerCodec());
+                        pipeline.addLast(new HttpObjectAggregator(65536));
+                        pipeline.addLast(new WebSocketAuthHeader(stringRedisTemplate));
+                        pipeline.addLast(new WebSocketServerProtocolHandler("/ws/netty"));
+                        pipeline.addLast(new WebSocketHandler(kafkaTemplate));//实际业务处理
+                    }
+                });
+        serverBootstrap.bind(port).sync();
+    }
+
+    @PreDestroy
+    public void destroy(){
+        bossGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
+    }
+}

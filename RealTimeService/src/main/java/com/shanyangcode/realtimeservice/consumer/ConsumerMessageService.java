@@ -80,6 +80,7 @@ public class ConsumerMessageService {
         pushMessageToUser(messageResponse, chatRequest.getUserId());
         BeanUtil.copyProperties(messageResponse,messageRequest);
 
+        // Ai的消息也要被持久化，topic_store持久化存储历史消息
         kafkaTemplate.send(CommonConstant.KAFKA_MESSAGE_TOPIC_STORE, JSONUtil.toJsonStr(messageRequest)).whenComplete((success, failure) -> {
             if (failure != null) {
                 // 生产者生产失败
@@ -111,6 +112,11 @@ public class ConsumerMessageService {
     }
 
 
+    /**
+     * 推送消息给指定用户（每个成员有自己独立的 WebSocket 连接（Channel），所以必须逐个用户推送）
+     * @param messageResponse
+     * @param receiverId
+     */
     public void pushMessageToUser(MessageResponse messageResponse, Long receiverId) {
         Channel channel = ChannelManager.getChannelByUserId(receiverId.toString());
         if (channel != null) {

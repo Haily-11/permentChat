@@ -5,8 +5,14 @@ import lombok.Data;
 @Data
 public class MessageBody {
 
+    /**
+     * 消息内容
+     */
     private String content;
 
+    /**
+     * 回复id
+     */
     //信息id
     private Long replyId;
 

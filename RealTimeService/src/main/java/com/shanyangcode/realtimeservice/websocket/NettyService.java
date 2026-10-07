@@ -34,9 +34,14 @@ public class NettyService {
     private final StringRedisTemplate stringRedisTemplate;
 
     private final KafkaTemplate<String,String> kafkaTemplate;
+
     @PostConstruct
     public void start() throws InterruptedException{
+        run();
+    }
 
+    public void run() throws InterruptedException{
+//ServerBootstrap 是 Netty 服务端的“启动装配器”，把线程、Channel、处理器等组装好，然后绑定端口开始监听。
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup,workerGroup)
                 .channel(NioServerSocketChannel.class)
@@ -51,7 +56,7 @@ public class NettyService {
                         pipeline.addLast(new HttpObjectAggregator(65536));
                         pipeline.addLast(new WebSocketAuthHeader(stringRedisTemplate));
                         pipeline.addLast(new WebSocketServerProtocolHandler("/ws/netty"));
-                        pipeline.addLast(new WebSocketHandler(kafkaTemplate));//实际业务处理
+                        pipeline.addLast(new WebSocketHandler(kafkaTemplate,stringRedisTemplate));//实际业务处理
                     }
                 });
         serverBootstrap.bind(port).sync();

@@ -1,23 +1,20 @@
 package com.shanyangcode.realtimeservice.websocket;
 
-import cn.hutool.core.lang.Snowflake;
 import cn.hutool.json.JSONUtil;
 import com.shanyangcode.common.constant.CommonConstant;
 import com.shanyangcode.common.model.dto.MessageRequest;
 import com.shanyangcode.realtimeservice.constants.WebSocketConstant;
 import com.shanyangcode.realtimeservice.utils.SnowflakeDynamicUtil;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.util.concurrent.EventExecutorGroup;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Date;
 
@@ -57,6 +54,34 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
         }
     }
 
+    /**
+     * 处理心跳检测事件
+     * @param ctx
+     * @param evt
+     */
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
+        // 处理心跳
+        if (evt instanceof IdleStateEvent event) {
+            switch (event.state()) {
+                case READER_IDLE:
+                    log.error("读空闲超时");
+                    clearChannel(ctx.channel());
+                    ctx.close();
+                    break;
+                case WRITER_IDLE:
+                    log.error("写空闲超时");
+                case ALL_IDLE:
+                    log.error("读写空闲超时");
+            }
+        }
+    }
+
+    /**
+     * 发送消息到kafka
+     * @param msg
+     * @param channel
+     */
     private void sendMessageKafKa(String msg, Channel channel) {
 
         //先转为json
@@ -115,6 +140,10 @@ public class WebSocketHandler extends SimpleChannelInboundHandler<TextWebSocketF
         }
     }
 
+    /**
+     * 记录用户离线时间
+     * @param userId
+     */
     private void saveOfflineTime(String userId) {
         String key = CommonConstant.OFFLINE_KEY_REDIS + userId;
         String timestamp = String.valueOf(System.currentTimeMillis());//System.currentTimeMillis()返回的是long

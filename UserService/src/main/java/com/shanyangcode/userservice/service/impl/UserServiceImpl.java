@@ -215,7 +215,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String nettyUri = serviceInstanceUtil.getServiceInstance(loginAndRegisterResponse.getUserId().toString());
         loginAndRegisterResponse.setNettyUri(nettyUri);
 
-        //获取兵清除离线时间
+        //获取并清除离线时间，登陆的时候就要清除上次的离线时间，因为用户已经上线了，而且下次会有新的离线时间记录
         Long offlineTime = getAndClearofflineTime(userId);
         loginAndRegisterResponse.setOfflineTime(offlineTime);
 

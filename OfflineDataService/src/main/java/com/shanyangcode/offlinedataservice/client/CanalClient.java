@@ -248,7 +248,7 @@ public class CanalClient implements CommandLineRunner {
         String key = CommonConstant.SESSION_KEY_REDIS + messageResponse.getSessionId();
         String messageJson = JSON.toJSONString(messageResponse);
         try{
-            //获取离线时间和score
+            //获取七天前的时间戳和要存入消息的score
             double score = DATE_FORMATTER.get().parse(messageResponse.getCreatedTime()).getTime();//.getTime()返回时间戳
             long cutoff = System.currentTimeMillis() - CommonConstant.SEVEN_DAYS_MILLIS;
 
@@ -260,6 +260,7 @@ public class CanalClient implements CommandLineRunner {
                     StringRedisTemplate redisTemplate = (StringRedisTemplate) operations;
                     //将数据写入redis
                     redisTemplate.opsForZSet().add(key,messageJson,score);
+                    //删除7天前的数据
                     redisTemplate.opsForZSet().removeRangeByScore(key,0,cutoff);
                     return null;
                 }

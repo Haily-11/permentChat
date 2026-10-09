@@ -2,7 +2,7 @@ package com.shanyangcode.userservice.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.shanyangcode.common.model.vo.UserInfosResponse;
-import com.shanyangcode.userservice.model.dto.request.UpdataAvatarRequest;
+import com.shanyangcode.userservice.model.dto.request.UpdateAvatarRequest;
 import com.shanyangcode.userservice.model.dto.request.UserLoginCodeRequest;
 import com.shanyangcode.userservice.model.dto.request.UserLoginPasswordRequest;
 import com.shanyangcode.userservice.model.dto.request.UserRegisterRequest;
@@ -38,7 +38,7 @@ public interface UserService extends IService<User> {
 
     UploadUrlResponse UploadUrl(String fileName);
 
-    Boolean updateAvatar(UpdataAvatarRequest updataAvatarRequest);
+    Boolean updateAvatar(UpdateAvatarRequest updataAvatarRequest);
 
     Map<Long, String> getUserNickName(Long sessionId);
 

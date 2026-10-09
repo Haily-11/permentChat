@@ -8,14 +8,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.shanyangcode.common.constant.CommonConstant;
 import com.shanyangcode.common.constant.SessionTypeConstant;
+import com.shanyangcode.common.exception.ThrowUtils;
 import com.shanyangcode.common.model.vo.UserInfosResponse;
 import com.shanyangcode.common.utils.JwtUtil;
-import com.shanyangcode.userservice.common.ErrorCode;
 import com.shanyangcode.userservice.constant.UserConstant;
-import com.shanyangcode.userservice.exception.ThrowUtils;
 import com.shanyangcode.userservice.loadbalancer.NettyServiceLocator;
 import com.shanyangcode.userservice.mapper.UserMapper;
-import com.shanyangcode.userservice.model.dto.request.UpdataAvatarRequest;
+import com.shanyangcode.userservice.model.dto.request.UpdateAvatarRequest;
 import com.shanyangcode.userservice.model.dto.request.UserLoginCodeRequest;
 import com.shanyangcode.userservice.model.dto.request.UserLoginPasswordRequest;
 import com.shanyangcode.userservice.model.dto.request.UserRegisterRequest;
@@ -27,6 +26,7 @@ import com.shanyangcode.userservice.model.vo.TokenResponse;
 import com.shanyangcode.userservice.model.vo.UploadUrlResponse;
 import com.shanyangcode.userservice.service.SessionService;
 import com.shanyangcode.userservice.service.UserService;
+import com.shanyangcode.common.common.ErrorCode;
 
 import com.shanyangcode.userservice.service.UserSessionService;
 import com.shanyangcode.userservice.utils.EmailUtil;
@@ -81,7 +81,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public void sendCaptcha(String targetEmail) {
         String existingCode = stringRedisTemplate.opsForValue().get(targetEmail);
-        ThrowUtils.throwIf(StringUtils.isNotBlank(existingCode), ErrorCode.LOGIN_SEND_CODE_ERROR);
+        ThrowUtils.throwIf(StringUtils.isNotBlank(existingCode), ErrorCode.LOGIN_ERROR_CODE);
 
         String randomCode = RandomCodeUtil.getRandomCode();
         emailUtil.sendEmail(targetEmail, randomCode);
@@ -102,7 +102,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
         // 验证密码是否相同
-        ThrowUtils.throwIf(!userRegisterRequest.getPassword().equals(userRegisterRequest.getConfirmPassword()),ErrorCode.LOGIN_PASSWORD_ERROR);
+        ThrowUtils.throwIf(!userRegisterRequest.getPassword().equals(userRegisterRequest.getConfirmPassword()),ErrorCode.LoginPasswordError);
 
 
         String password = userRegisterRequest.getPassword();
@@ -280,12 +280,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public Boolean updateAvatar(UpdataAvatarRequest updataAvatarRequest) {
-        User user = this.getById(updataAvatarRequest.getUserId());
+    public Boolean updateAvatar(UpdateAvatarRequest updateAvatarRequest) {
+        User user = this.getById(updateAvatarRequest.getUserId());
         if(user==null){
             return false;
         }
-        user.setAvatar(updataAvatarRequest.getUri());
+        user.setAvatar(updateAvatarRequest.getUrl());
         return this.updateById(user);
     }
 

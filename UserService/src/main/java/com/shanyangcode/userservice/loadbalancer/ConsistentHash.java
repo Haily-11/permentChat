@@ -5,8 +5,8 @@ import org.springframework.cloud.client.ServiceInstance;
 import java.util.*;
 @SuppressWarnings({"all"})
 public class ConsistentHash {
-
-    private TreeMap<Integer,String> Nodes = new TreeMap();
+    //键/值：服务器Hash值 对应的地址
+    private TreeMap<Integer,String> Nodes = new TreeMap();//
 
     private int VIRTUAL_NODES = 160;//虚拟节点个数，用户指定，默认160
 

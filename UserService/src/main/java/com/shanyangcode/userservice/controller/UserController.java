@@ -1,13 +1,13 @@
 package com.shanyangcode.userservice.controller;
 
 
+import com.shanyangcode.common.exception.ThrowUtils;
+import com.shanyangcode.common.common.ErrorCode;
 import com.shanyangcode.common.utils.JwtUtil;
-import com.shanyangcode.userservice.common.BaseResponse;
-import com.shanyangcode.userservice.common.ErrorCode;
-import com.shanyangcode.userservice.common.ResultUtils;
+import com.shanyangcode.common.common.BaseResponse;
+import com.shanyangcode.common.common.ResultUtils;
 import com.shanyangcode.userservice.constant.UserConstant;
-import com.shanyangcode.userservice.exception.ThrowUtils;
-import com.shanyangcode.userservice.model.dto.request.UpdataAvatarRequest;
+import com.shanyangcode.userservice.model.dto.request.UpdateAvatarRequest;
 import com.shanyangcode.userservice.model.dto.request.UserLoginCodeRequest;
 import com.shanyangcode.userservice.model.dto.request.UserLoginPasswordRequest;
 import com.shanyangcode.userservice.model.dto.request.UserRegisterRequest;
@@ -89,8 +89,8 @@ public class UserController {
     }
 
     @PostMapping("/update/avator")
-    public BaseResponse<Boolean> updateAvator(@RequestBody UpdataAvatarRequest updataAvatarRequest){
-        return ResultUtils.success(userService.updateAvatar(updataAvatarRequest));
+    public BaseResponse<Boolean> updateAvator(@RequestBody UpdateAvatarRequest updateAvatarRequest){
+        return ResultUtils.success(userService.updateAvatar(updateAvatarRequest));
     }
 
     @GetMapping("/get/nickname")

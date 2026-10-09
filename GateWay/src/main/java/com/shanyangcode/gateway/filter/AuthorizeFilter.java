@@ -48,6 +48,8 @@ public class AuthorizeFilter implements GlobalFilter, Ordered {
 
         // 白名单路径直接放行
         if (EXCLUDE_PATHS.stream().anyMatch(path::startsWith)) {
+            //chain 是 GatewayFilterChain 对象，代表"剩下的过滤器链"。
+            //这里是指把请求交给链上的下一个过滤器继续处理，不是递归调用
             return chain.filter(exchange);
         }
 
@@ -78,7 +80,8 @@ public class AuthorizeFilter implements GlobalFilter, Ordered {
                     String redisRefreshToken = stringRedisTemplate.opsForValue()
                             .get(CommonConstant.REFRESH_TOKEN_PREFIX + userId);
                     if (refreshToken.equals(redisRefreshToken)) {
-                        // Refresh-Token 有效，但 Access-Token 已失效 → 触发前端刷新
+                        // Refresh-Token 有效，但 Access-Token 已失效 →
+                        //网关不负责刷新 Token，也不负责重新生成 Token。 它只是"通知"前端："Access-Token 过期了，但你的 Refresh-Token 还能用，快去刷新吧。"
                         return buildErrorResponse(exchange, ErrorCode.TOKEN_EXPIRED);
                     }
                 }

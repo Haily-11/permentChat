@@ -17,7 +17,7 @@ public class ConsumerOfflineService {
     public void consume(String msg){
         System.out.println("Consumed message store:"+msg);
         MessageRequest msgRequest = JSONUtil.toBean(msg, MessageRequest.class);
-        messageService.savaMessageToMySQL(msgRequest);
+        messageService.saveMessageToMySQL(msgRequest);
         System.out.println(msgRequest);
     }
 }

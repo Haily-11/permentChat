@@ -56,9 +56,9 @@ public class ConsumerMessageService {
 
     public void signalMessage(MessageRequest messageRequest) {
         MessageResponse messageResponse = createMessageResponse(messageRequest);
+        //这里推送个senderId是考虑到用户可能又对台设备进行登录
         pushMessageToUser(messageResponse, messageRequest.getSenderId());
         pushMessageToUser(messageResponse, messageRequest.getReceiverId());
-
     }
 
     public void aiSignalMessage(MessageRequest messageRequest) {

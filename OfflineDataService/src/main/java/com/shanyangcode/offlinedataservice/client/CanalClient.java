@@ -54,6 +54,7 @@ public class CanalClient implements CommandLineRunner {
     @Override
     public void run(String... args) {
         new Thread(this::process).start();
+
     }
 
 
